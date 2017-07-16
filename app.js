@@ -24,7 +24,7 @@ app.get('/', (req, res) => {
     const cosmic = response
     if (cosmic.objects.type.posts) {
       cosmic.objects.type.posts.forEach(post => {
-        const friendly_date = helpers.friendlyDate(new Date(post.created_at))
+        const friendly_date = helpers.friendlyDate(new Date(post.created))
         post.friendly_date = friendly_date.month + ' ' + friendly_date.date
       })
     } else {
@@ -32,6 +32,50 @@ app.get('/', (req, res) => {
     }
     res.locals.cosmic = cosmic
     res.render('index.html', { partials })
+  })
+})
+// Single Post
+app.get('/:slug', (req, res) => {
+  Cosmic.getObjects({ bucket: { slug: bucket_slug, read_key: read_key } }, (err, response) => {
+    const cosmic = response
+    if (cosmic.objects.type.posts) {
+      cosmic.objects.type.posts.forEach(post => {
+        const friendly_date = helpers.friendlyDate(new Date(post.created))
+        post.friendly_date = friendly_date.month + ' ' + friendly_date.date
+        // Get current post
+        if (post.slug === req.params.slug)
+          res.locals.current_post = post
+      })
+    } else {
+      cosmic.no_posts = true
+    }
+    res.locals.cosmic = cosmic
+    if (!res.locals.current_post)
+      res.status(404)
+    res.render('post.html', { partials })
+  })
+})
+// Author Posts
+app.get('/author/:slug', (req, res) => {
+  Cosmic.getObjects({ bucket: { slug: bucket_slug, read_key: read_key } }, (err, response) => {
+    const cosmic = response
+    if (cosmic.objects.type.posts) {
+      let author_posts = []
+      cosmic.objects.type.posts.forEach(post => {
+        const friendly_date = helpers.friendlyDate(new Date(post.created))
+        post.friendly_date = friendly_date.month + ' ' + friendly_date.date
+        if (post.metadata.author.slug === req.params.slug) {
+          res.locals.author = post.metadata.author
+          author_posts.push(post)
+        }
+      })
+      cosmic.objects.type.posts = author_posts
+    } else {
+      cosmic.no_posts = true
+    }
+    res.locals.author
+    res.locals.cosmic = cosmic
+    res.render('author.html', { partials })
   })
 })
 http.listen(app.get('port'), () => {
