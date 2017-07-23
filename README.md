@@ -3,7 +3,7 @@
 ### [View Demo](https://cosmicjs.com/apps/simple-blog/demo)
 ### Getting Started
 ```
-git clone https://github.com/cosmicjs/simple-blog
+git clone https://github.com/khanhnamle1994/simple-blog
 cd simple-blog
 yarn
 ```
